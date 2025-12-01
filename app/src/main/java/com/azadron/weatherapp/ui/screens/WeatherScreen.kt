@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,63 +39,36 @@ fun WeatherScreen(
     val uiState by viewModel.uiState.collectAsState()
     var cityQuery by remember { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onRequestLocation,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.LocationOn,
-                            contentDescription = "Current Location",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Top Bar
+        WeatherTopBar(
+            cityQuery = cityQuery,
+            onCityQueryChange = { cityQuery = it },
+            onSearchClick = { viewModel.loadWeatherByCity(cityQuery) },
+            onLocationClick = onRequestLocation,
+            onSettingsClick = onSettingsClick
+        )
 
-                    OutlinedTextField(
-                        value = cityQuery,
-                        onValueChange = { cityQuery = it },
-                        label = { Text("Search City") },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 8.dp),
-                        trailingIcon = {
-                            IconButton(onClick = { viewModel.loadWeatherByCity(cityQuery) }) {
-                                Icon(Icons.Default.Search, contentDescription = "Search")
-                            }
-                        },
-                        singleLine = true
-                    )
-
-                    IconButton(
-                        onClick = onSettingsClick,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-    ) { paddingValues ->
+        // Content below Top Bar
         Box(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp),
-            contentAlignment = Alignment.TopCenter
+                .padding(16.dp)
         ) {
             when (val state = uiState) {
-                is WeatherUiState.Loading -> CircularProgressIndicator()
-                is WeatherUiState.Error -> Text(text = state.message, color = Color.Red)
-                is WeatherUiState.Success -> WeatherContent(state)
+                is WeatherUiState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                is WeatherUiState.Error -> {
+                    Text(
+                        text = state.message,
+                        color = Color.Red,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                is WeatherUiState.Success -> {
+                    WeatherContent(state)
+                }
             }
         }
     }
@@ -235,6 +209,93 @@ fun WeatherDetailItem(label: String, value: String, textColor: Color = Color.Bla
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = label, style = MaterialTheme.typography.bodySmall, color = textColor)
         Text(text = value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = textColor)
+    }
+}
+@Composable
+fun WeatherTopBar(
+    cityQuery: String,
+    onCityQueryChange: (String) -> Unit,
+    onSearchClick: () -> Unit,
+    onLocationClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
+    Surface(
+        shadowElevation = 8.dp,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp, vertical = 12.dp)
+            .clip(RoundedCornerShape(24.dp))
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // Location Button
+            IconButton(
+                onClick = onLocationClick,
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+            ) {
+                Icon(
+                    Icons.Default.LocationOn,
+                    contentDescription = "Current Location",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            // Search Field
+            OutlinedTextField(
+                value = cityQuery,
+                onValueChange = onCityQueryChange,
+                placeholder = { Text("Search city") },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .padding(horizontal = 12.dp),
+                singleLine = true,
+                shape = RoundedCornerShape(24.dp),
+                trailingIcon = {
+                    IconButton(onClick = onSearchClick) {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = Color.Transparent,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+                    focusedTrailingIconColor = MaterialTheme.colorScheme.primary
+                )
+            )
+
+            // Settings Button
+            IconButton(
+                onClick = onSettingsClick,
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+            ) {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
     }
 }
 

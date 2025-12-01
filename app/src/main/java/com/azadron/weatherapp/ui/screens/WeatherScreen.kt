@@ -1,20 +1,28 @@
 package com.azadron.weatherapp.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.azadron.weatherapp.R
 import com.azadron.weatherapp.data.ForecastItem
 import com.azadron.weatherapp.viewmodel.WeatherUiState
 import com.azadron.weatherapp.viewmodel.WeatherViewModel
@@ -34,7 +42,6 @@ fun WeatherScreen(
         topBar = {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Location Button
                     IconButton(
                         onClick = onRequestLocation,
                         modifier = Modifier.size(48.dp)
@@ -46,7 +53,6 @@ fun WeatherScreen(
                         )
                     }
 
-                    // Search Bar
                     OutlinedTextField(
                         value = cityQuery,
                         onValueChange = { cityQuery = it },
@@ -62,7 +68,6 @@ fun WeatherScreen(
                         singleLine = true
                     )
 
-                    // Settings Button
                     IconButton(
                         onClick = onSettingsClick,
                         modifier = Modifier.size(48.dp)
@@ -82,8 +87,9 @@ fun WeatherScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.TopCenter
         ) {
             when (val state = uiState) {
                 is WeatherUiState.Loading -> CircularProgressIndicator()
@@ -105,34 +111,51 @@ fun WeatherContent(state: WeatherUiState.Success) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    .padding(bottom = 24.dp)
+                    .clip(RoundedCornerShape(24.dp)),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color(0xFF2196F3), Color(0xFF64B5F6))
+                            )
+                        )
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = state.currentWeather.name,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "${state.currentWeather.main.temp.toInt()}°C",
-                        style = MaterialTheme.typography.displayLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = state.currentWeather.weather.firstOrNull()?.description?.replaceFirstChar { it.uppercase() } ?: "",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        WeatherDetailItem("Humidity", "${state.currentWeather.main.humidity}%")
-                        WeatherDetailItem("Wind", "${state.currentWeather.wind.speed} m/s")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = state.currentWeather.name,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "${state.currentWeather.main.temp.toInt()}°C",
+                            style = MaterialTheme.typography.displayLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = state.currentWeather.weather.firstOrNull()?.description
+                                ?.replaceFirstChar { it.uppercase() } ?: "",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            WeatherDetailItem("Humidity", "${state.currentWeather.main.humidity}%", Color.White)
+                            WeatherDetailItem("Wind", "${state.currentWeather.wind.speed} m/s", Color.White)
+                        }
                     }
                 }
             }
@@ -148,7 +171,6 @@ fun WeatherContent(state: WeatherUiState.Success) {
             )
         }
 
-        // Forecast List
         items(state.forecast.list) { forecastItem ->
             ForecastItemCard(forecastItem)
             Spacer(modifier = Modifier.height(8.dp))
@@ -161,44 +183,61 @@ fun ForecastItemCard(item: ForecastItem) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .height(100.dp)
+            .padding(vertical = 4.dp)
+            .clip(RoundedCornerShape(16.dp)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
-                .padding(8.dp)
+                .padding(12.dp)
                 .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = formatDate(item.dtTxt),
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "${item.main.temp.toInt()}°C",
-                style = MaterialTheme.typography.titleLarge
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = item.weather.firstOrNull()?.main ?: "",
-                style = MaterialTheme.typography.bodySmall
-            )
+            Column(horizontalAlignment = Alignment.Start) {
+                Text(
+                    text = formatDate(item.dtTxt),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = item.weather.firstOrNull()?.main ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "${item.main.temp.toInt()}°C",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Icon(
+                    imageVector = when (item.weather.firstOrNull()?.main) {
+                        "Rain" -> Icons.Default.Cloud
+                        "Clear" -> Icons.Default.WbSunny
+                        "Clouds" -> Icons.Default.CloudQueue
+                        else -> Icons.AutoMirrored.Filled.Help
+                    },
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
 
 @Composable
-fun WeatherDetailItem(label: String, value: String) {
+fun WeatherDetailItem(label: String, value: String, textColor: Color = Color.Black) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, style = MaterialTheme.typography.bodySmall)
-        Text(text = value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+        Text(text = label, style = MaterialTheme.typography.bodySmall, color = textColor)
+        Text(text = value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = textColor)
     }
 }
 
-// Helper to format date string "2023-10-01 12:00:00" -> "Mon 12:00"
 fun formatDate(dateString: String): String {
     return try {
         val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())

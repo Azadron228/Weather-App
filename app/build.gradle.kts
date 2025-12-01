@@ -64,6 +64,11 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
+    // Material3 icons
+    implementation("androidx.compose.material3:material3:1.4.0")
+    // Extended icons
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
 
     // Tests
     testImplementation(libs.junit)

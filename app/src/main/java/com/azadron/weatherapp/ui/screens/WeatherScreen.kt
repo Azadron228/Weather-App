@@ -252,32 +252,35 @@ fun WeatherTopBar(
                 )
             }
 
-            // Search Field
-            OutlinedTextField(
-                value = cityQuery,
-                onValueChange = onCityQueryChange,
-                placeholder = { Text("Search city") },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
-                    .padding(horizontal = 12.dp),
-                singleLine = true,
-                shape = RoundedCornerShape(24.dp),
-                trailingIcon = {
-                    IconButton(onClick = onSearchClick) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
-                    }
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = Color.Transparent,
-                    cursorColor = MaterialTheme.colorScheme.primary,
-                    focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
-                    focusedTrailingIconColor = MaterialTheme.colorScheme.primary
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Box(modifier = Modifier.weight(1f)) { // Wrap in Box to avoid overlapping
+                OutlinedTextField(
+                    value = cityQuery,
+                    onValueChange = onCityQueryChange,
+                    placeholder = { Text("Search city") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(24.dp),
+                    trailingIcon = {
+                        IconButton(onClick = onSearchClick) {
+                            Icon(Icons.Default.Search, contentDescription = "Search")
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = Color.Transparent,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedLeadingIconColor = MaterialTheme.colorScheme.primary,
+                        focusedTrailingIconColor = MaterialTheme.colorScheme.primary
+                    )
                 )
-            )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
 
             // Settings Button
             IconButton(

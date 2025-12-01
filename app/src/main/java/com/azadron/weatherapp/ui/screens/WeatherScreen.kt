@@ -1,24 +1,20 @@
 package com.azadron.weatherapp.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.azadron.weatherapp.data.ForecastItem
 import com.azadron.weatherapp.viewmodel.WeatherUiState
 import com.azadron.weatherapp.viewmodel.WeatherViewModel
@@ -28,7 +24,8 @@ import java.util.*
 @Composable
 fun WeatherScreen(
     onRequestLocation: () -> Unit,
-    viewModel: WeatherViewModel = hiltViewModel()
+    viewModel: WeatherViewModel = hiltViewModel(),
+    onSettingsClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var cityQuery by remember { mutableStateOf("") }
@@ -36,30 +33,48 @@ fun WeatherScreen(
     Scaffold(
         topBar = {
             Column(modifier = Modifier.padding(16.dp)) {
-                // Search Bar
-                OutlinedTextField(
-                    value = cityQuery,
-                    onValueChange = { cityQuery = it },
-                    label = { Text("Search City") },
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = { viewModel.loadWeatherByCity(cityQuery) }) {
-                            Icon(Icons.Default.Search, contentDescription = "Search")
-                        }
-                    },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                // Location Button
-                Button(
-                    onClick = onRequestLocation,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                ) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Use Current Location")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Location Button
+                    IconButton(
+                        onClick = onRequestLocation,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.LocationOn,
+                            contentDescription = "Current Location",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    // Search Bar
+                    OutlinedTextField(
+                        value = cityQuery,
+                        onValueChange = { cityQuery = it },
+                        label = { Text("Search City") },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 8.dp),
+                        trailingIcon = {
+                            IconButton(onClick = { viewModel.loadWeatherByCity(cityQuery) }) {
+                                Icon(Icons.Default.Search, contentDescription = "Search")
+                            }
+                        },
+                        singleLine = true
+                    )
+
+                    // Settings Button
+                    IconButton(
+                        onClick = onSettingsClick,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     ) { paddingValues ->
@@ -125,7 +140,7 @@ fun WeatherContent(state: WeatherUiState.Success) {
 
         item {
             Text(
-                text = "5-Day Forecast (3 Hour Intervals)",
+                text = "Weekly Forecast",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -134,14 +149,9 @@ fun WeatherContent(state: WeatherUiState.Success) {
         }
 
         // Forecast List
-        item {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(state.forecast.list) { forecastItem ->
-                    ForecastItemCard(forecastItem)
-                }
-            }
+        items(state.forecast.list) { forecastItem ->
+            ForecastItemCard(forecastItem)
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
@@ -150,8 +160,8 @@ fun WeatherContent(state: WeatherUiState.Success) {
 fun ForecastItemCard(item: ForecastItem) {
     Card(
         modifier = Modifier
-            .width(120.dp)
-            .height(160.dp),
+            .fillMaxWidth()
+            .height(100.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
